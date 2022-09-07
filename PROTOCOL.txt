@@ -1,0 +1,27 @@
+PROTOCOL
+
+WHAT DOES DIRECTORY COMTAIN
+
+main directory should have 2 files. There are "list_of_users.txt" and 
+"list_of_files.txt"
+main directory should also have directory downloadings.
+list_of_users.txt contains user nickname and password
+list_of_files.txt contains file name, nickname of authors of that file,
+permissions for downloading.
+
+PERMISSIONS FOR DOWNLOADING
+
+there are 3 types of permissions for downloading in octal numbers:
+001 = only author may download his file
+010 = only registered users can download file
+100 = only unregistered users can download file
+
+USER COMMANDS
+
+register           - register a user
+password           - change a password. only if a user is registered
+put <file_name>    - put a file to a directory. only if a user is registered
+get <file_name>    - download a file. permissions for downloading file 
+depends on file permissions
+remove <file_name> - remove a file from directory. only if user owns this file
+rename <file_name> - rename a file in directory. only if user owns this file
