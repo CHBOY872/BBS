@@ -7,9 +7,9 @@ RELEASE=-s
 ANSI=-ansi
 ISOSTD=
 
-SRCMODULES=
-OBJMODULES=$(SRCMODULES:.c=:.o)
-HEDMODULES=$(SRCMODULES:.c=:.h)
+SRCMODULES=file_database.c user_database.c
+HDRMODULES=$(SRCMODULES:.c=.h)
+OBJMODULES=$(SRCMODULES:.c=.o)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) $(DEBUG) $(ANSI) $< -c -o $@

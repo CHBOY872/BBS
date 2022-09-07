@@ -13,6 +13,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include "file_database.h"
+#include "user_structure.h"
+
 #ifndef BUFFERSIZE
 #define BUFFERSIZE 256
 #endif
@@ -21,6 +24,13 @@
 static const char list_of_users[] = "list_of_users.txt";
 static const char list_of_files[] = "list_of_files.txt";
 static const char downloadings_path[] = "downloadings";
+
+static const char *commands[] = {"register",
+								 "password",
+								 "put",
+								 "get",
+								 "remove",
+								 "rename"};
 
 enum step
 {
@@ -59,12 +69,12 @@ int init_programm(DIR *main_dir)
 		return -1;
 	}
 	close(fd);
-	DIR *download_dir = opendir(downloadings_path);
+	len = sprintf(full_path, "%s/%s", main_dir_path, downloadings_path);
+	if (len >= MAX_PATH_LEN)
+		return -1;
+	DIR *download_dir = opendir(full_path);
 	if (!download_dir)
 	{
-		len = sprintf(full_path, "%s/%s", main_dir_path, downloadings_path);
-		if (len >= MAX_PATH_LEN)
-			return -1;
 		int stat = mkdir(full_path, 0666);
 		if (-1 == stat)
 			return -1;
@@ -93,8 +103,7 @@ int main(int argc, const char **argv)
 		perror("init");
 		return 3;
 	}
-
-	
+	append_file(0, 0);
 
 	return 0;
 }
