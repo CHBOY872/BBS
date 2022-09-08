@@ -3,8 +3,21 @@
 
 #include "file_structure.h"
 
-#define WRITING_FORMAT "%250s%250s%4d\n"
+#define WRITING_FORMAT "%250s %250s %4o\n"
+#define WRITING_FORMAT_LEN 506
+#define MAX_FILES_IN_ARRAY 50
+
+struct file_position /* person structure with position in dynamic array */
+{
+    struct file_structure file;
+    char pos;
+};
 
 void append_file(struct file_structure *file, const char *file_name);
-
+int edit_file_by_name(struct file_structure *file,
+                      const char *file_name, const char *file_path);
+int delete_file_by_name(struct file_structure *file,
+                        const char *file_name, const char *file_path);
+int get_file_by_name(const char *name, struct file_structure *to,
+                     const char *file_path);
 #endif

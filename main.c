@@ -103,7 +103,6 @@ int main(int argc, const char **argv)
 		perror("init");
 		return 3;
 	}
-	append_file(0, 0);
 
 	return 0;
 }
