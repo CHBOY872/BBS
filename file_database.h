@@ -20,4 +20,5 @@ int delete_file_by_name(struct file_structure *file,
                         const char *file_name, const char *file_path);
 int get_file_by_name(const char *name, struct file_structure *to,
                      const char *file_path);
+
 #endif
