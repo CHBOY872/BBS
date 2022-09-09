@@ -1,4 +1,4 @@
 #!/bin/sh
 
 make main
-rm *.o
+rm file/*.o user/*.o

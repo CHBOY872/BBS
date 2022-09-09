@@ -13,8 +13,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "file_database.h"
-#include "user_structure.h"
+#include "file/file_database.h"
+#include "user/user_structure.h"
 
 #ifndef BUFFERSIZE
 #define BUFFERSIZE 256
@@ -108,8 +108,9 @@ int main(int argc, const char **argv)
 	strcpy(file.author_nickname, "HELLO");
 	strcpy(file.file_name, "main2626263.txt");
 	file.perms = 0007;
+	append_file(&file, "mainir/list_of_files.txt");
 
-	if (edit_file_by_name(&file, "main.txt", "mainir/list_of_files.txt") == -1)
+	if (delete_file_by_name(&file, "main.txt", "mainir/list_of_files.txt") == -1)
 	{
 		printf("Error\n");
 	}

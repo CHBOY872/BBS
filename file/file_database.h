@@ -5,7 +5,6 @@
 
 #define WRITING_FORMAT "%250s %250s %4o\n"
 #define WRITING_FORMAT_LEN 506
-#define MAX_FILES_IN_ARRAY 50
 
 struct file_position /* person structure with position in dynamic array */
 {

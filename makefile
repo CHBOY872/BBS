@@ -7,7 +7,7 @@ RELEASE=-s
 ANSI=-ansi
 ISOSTD=
 
-SRCMODULES=file_database.c user_database.c
+SRCMODULES=file/file_database.c user/user_database.c
 HDRMODULES=$(SRCMODULES:.c=.h)
 OBJMODULES=$(SRCMODULES:.c=.o)
 
