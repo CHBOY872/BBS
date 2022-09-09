@@ -104,5 +104,15 @@ int main(int argc, const char **argv)
 		return 3;
 	}
 
+	struct file_structure file;
+	strcpy(file.author_nickname, "HELLO");
+	strcpy(file.file_name, "main2626263.txt");
+	file.perms = 0007;
+
+	if (edit_file_by_name(&file, "main.txt", "mainir/list_of_files.txt") == -1)
+	{
+		printf("Error\n");
+	}
+
 	return 0;
 }

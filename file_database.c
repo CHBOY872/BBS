@@ -11,7 +11,6 @@ int get_file_by_name(const char *name, struct file_structure *to,
     if (!f)
         return -1;
 
-    fclose(f);
     int i = 0;
     while (fscanf(f, WRITING_FORMAT, to->file_name,
                   to->author_nickname, &to->perms) != EOF)
@@ -20,6 +19,7 @@ int get_file_by_name(const char *name, struct file_structure *to,
             return i;
         i++;
     }
+    fclose(f);
     return -1;
 }
 
@@ -38,7 +38,7 @@ int edit_file_by_name(struct file_structure *file,
                       const char *file_name, const char *file_path)
 {
     struct file_structure temp;
-    int stat = get_file_by_name(file->file_name, &temp, file_path);
+    int stat = get_file_by_name(file_name, &temp, file_path);
     if (stat == -1)
         return -1;
     FILE *where = fopen(file_name, "r+");
