@@ -16,7 +16,10 @@ int get_file_by_name(const char *name, struct file_structure *to,
                   to->author_nickname, &to->perms) != EOF)
     {
         if (!strcpy((char *)name, to->file_name))
+        {
+            fclose(f);
             return i;
+        }
         i++;
     }
     fclose(f);
