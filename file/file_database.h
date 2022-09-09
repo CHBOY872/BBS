@@ -6,12 +6,6 @@
 #define WRITING_FORMAT "%250s %250s %4o\n"
 #define WRITING_FORMAT_LEN 506
 
-struct file_position /* person structure with position in dynamic array */
-{
-    struct file_structure file;
-    char pos;
-};
-
 void append_file(struct file_structure *file, const char *file_name);
 int edit_file_by_name(struct file_structure *file,
                       const char *file_name, const char *file_path);
