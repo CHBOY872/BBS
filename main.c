@@ -42,7 +42,7 @@ int init_directive(const char *path, int perms)
 	return 0;
 }
 
-int init_programm(DIR *main_dir)
+int init_programm()
 {
 	char full_path[MAX_PATH_LEN];
 	int len;
@@ -89,7 +89,7 @@ int main(int argc, const char **argv)
 	}
 	closedir(dir);
 	main_dir_path = argv[1];
-	if (-1 == init_programm(dir))
+	if (-1 == init_programm())
 	{
 		perror("init");
 		return 3;
@@ -100,6 +100,6 @@ int main(int argc, const char **argv)
 		perror("socket");
 		return 4;
 	}
-	
-	return 0;
+
+	return run(fd, NULL, NULL, NULL);
 }
