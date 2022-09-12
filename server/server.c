@@ -159,7 +159,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             else
             {
                 sess->user = malloc(sizeof(struct user_structure));
-                if (get_user_by_name(msg, sess->user, user_file_path))
+                if (-1 != get_user_by_name(msg, sess->user, user_file_path))
                     send_msg(sess->fd, user_is_exist_msg,
                              sizeof(user_is_exist_msg));
                 else
@@ -181,6 +181,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 strcpy(sess->user->password, msg);
                 append_user(sess->user, user_file_path);
                 sess->reg_step = step_registration_no;
+                sess->auth_step = step_authorization_noauthorized;
                 send_msg(sess->fd, success_registation_msg,
                          sizeof(success_registation_msg));
                 free(sess->user);
@@ -225,7 +226,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         else
         {
             struct user_structure user;
-            if (-1 == get_user_by_name(msg, &user, user_file_path))
+            if (-1 == get_user_by_name(sess->name, &user, user_file_path))
             {
                 free(sess->name);
                 sess->name = NULL;
