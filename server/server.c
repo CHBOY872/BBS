@@ -115,6 +115,7 @@ struct session *make_session(int fd)
     sess->auth_step = step_authorization_uninitialized;
     sess->name = NULL;
     sess->buf_used = 0;
+    memset(sess->buf, 0, BUFFERSIZE);
     return sess;
 }
 
