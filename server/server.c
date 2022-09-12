@@ -219,6 +219,8 @@ int session_handle(struct session *sess, const char *user_file_path,
         str[buf_used + pos - 1] = 0;
     handle(str, sess, NULL, NULL, NULL);
     free(str);
+    sess->buf_used = 0;
+    memset(sess->buf, 0, buf_used + rc);
     return 0;
 }
 
