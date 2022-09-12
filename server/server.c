@@ -217,7 +217,7 @@ int session_handle(struct session *sess, const char *user_file_path,
     memcpy(str, sess->buf, buf_used + pos);
     if (str[buf_used + pos - 1] == '\r')
         str[buf_used + pos - 1] = 0;
-    handle(str, sess, NULL, NULL, NULL);
+    handle(str, sess, user_file_path, file_file_path, directive_path);
     free(str);
     sess->buf_used = 0;
     memset(sess->buf, 0, buf_used + rc);
@@ -228,13 +228,14 @@ int run(int fd_server, const char *user_file_path,
         const char *file_file_path, const char *directive_path)
 /* main server cycle */
 {
-    fd_set rds;
+    fd_set rds, wrs;
     int max_fd = fd_server;
     int i, last_fd;
     struct session **sess = NULL;
     for (;;)
     {
         FD_ZERO(&rds);
+	FD_ZERO(&wrs);
         FD_SET(fd_server, &rds);
         if (sess)
         {
@@ -250,7 +251,7 @@ int run(int fd_server, const char *user_file_path,
                 max_fd = last_fd;
         }
 
-        int stat = select(max_fd + 1, &rds, NULL, NULL, NULL);
+        int stat = select(max_fd + 1, &rds, &wrs, NULL, NULL); 
         if (stat == -1)
         {
             perror("select");
@@ -268,7 +269,8 @@ int run(int fd_server, const char *user_file_path,
                 {
                     if (FD_ISSET(i, &rds))
                     {
-                        if (-1 == session_handle(sess[i], NULL, NULL, NULL))
+                        if (-1 == session_handle(sess[i], user_file_path, 
+                                               file_file_path, directive_path))
                         {
                             end_session(&sess[i]);
                             find_max_descriptor(sess, &max_fd);
