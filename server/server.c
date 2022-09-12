@@ -18,8 +18,9 @@
 
 #include "server.h"
 
-static char greetings_msg[] = "Welcome! Do you have an account? ([Y/y] - yes,"
-                              " [N/n] - no) : ";
+static char greetings_msg[] = "Welcome!\n";
+static char account_have_msg[] = "Do you have an account? ([Y/y] - yes,"
+                                 " [N/n] - no) : ";
 static char no_authorized_msg[] = "You are connected as NOauthorized user\n";
 static char login_msg[] = "Type your nickname: ";
 static char password_msg[] = "Type your password: ";
@@ -106,6 +107,7 @@ void accept_client(int server_fd, int *max_fd, struct session ***sess)
     }
     (*sess)[client_fd] = make_session(client_fd);
     send_msg(client_fd, greetings_msg, sizeof(greetings_msg));
+    send_msg(client_fd, account_have_msg, sizeof(account_have_msg));
 }
 
 struct session *make_session(int fd)
@@ -178,10 +180,12 @@ void handle(const char *msg, struct session *sess, const char *user_file_path,
             {
                 free(sess->name);
                 sess->name = NULL;
-                sess->auth_step = step_authorization_unauthorized_login;
+                sess->auth_step = step_authorization_uninitialized;
                 send_msg(sess->fd, incorrect_cred, sizeof(incorrect_cred));
-                send_msg(sess->fd, login_msg, sizeof(login_msg));
+                send_msg(sess->fd, account_have_msg, sizeof(account_have_msg));
             }
+            else
+                sess->auth_step = step_authorization_authorized;
         }
         break;
     default:
@@ -219,8 +223,8 @@ int session_handle(struct session *sess, const char *user_file_path,
         str[buf_used + pos - 1] = 0;
     handle(str, sess, user_file_path, file_file_path, directive_path);
     free(str);
+    bzero(sess->buf, sess->buf_used + rc);
     sess->buf_used = 0;
-    memset(sess->buf, 0, buf_used + rc);
     return 0;
 }
 
@@ -235,7 +239,7 @@ int run(int fd_server, const char *user_file_path,
     for (;;)
     {
         FD_ZERO(&rds);
-	FD_ZERO(&wrs);
+        FD_ZERO(&wrs);
         FD_SET(fd_server, &rds);
         if (sess)
         {
@@ -251,7 +255,7 @@ int run(int fd_server, const char *user_file_path,
                 max_fd = last_fd;
         }
 
-        int stat = select(max_fd + 1, &rds, &wrs, NULL, NULL); 
+        int stat = select(max_fd + 1, &rds, &wrs, NULL, NULL);
         if (stat == -1)
         {
             perror("select");
@@ -269,8 +273,8 @@ int run(int fd_server, const char *user_file_path,
                 {
                     if (FD_ISSET(i, &rds))
                     {
-                        if (-1 == session_handle(sess[i], user_file_path, 
-                                               file_file_path, directive_path))
+                        if (-1 == session_handle(sess[i], user_file_path,
+                                                 file_file_path, directive_path))
                         {
                             end_session(&sess[i]);
                             find_max_descriptor(sess, &max_fd);

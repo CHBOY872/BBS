@@ -6,7 +6,8 @@
 #define BUFFERSIZE 256
 #endif
 
-static const char *commands[] = {"register",
+static const char *commands[] = {"login",
+                                 "register",
                                  "password",
                                  "put",
                                  "get",

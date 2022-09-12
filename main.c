@@ -29,7 +29,7 @@ int init_file(const char *path, int flags, int perms)
 	return 0;
 }
 
-int init_directive(const char *path, int perms)
+int init_directory(const char *path, int perms)
 {
 	DIR *download_dir = opendir(path);
 	if (!download_dir)
@@ -38,7 +38,8 @@ int init_directive(const char *path, int perms)
 		if (-1 == stat)
 			return -1;
 	}
-	closedir(download_dir);
+	else
+		closedir(download_dir);
 	return 0;
 }
 
@@ -68,7 +69,7 @@ int init_programm(char *file_file_path, char *user_file_path,
 		return -1;
 
 	directory_path[len] = 0;
-	if (init_directive(directory_path, 0666))
+	if (init_directory(directory_path, 0666))
 		return -1;
 
 	return 0;
@@ -106,4 +107,3 @@ int main(int argc, const char **argv)
 
 	return run(fd, user_path, file_path, directory_path);
 }
-
