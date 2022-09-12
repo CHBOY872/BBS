@@ -235,7 +235,16 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 send_msg(sess->fd, account_have_msg, sizeof(account_have_msg));
             }
             else
-                sess->auth_step = step_authorization_authorized;
+            {
+                if (!strcmp(msg, user.password))
+                    sess->auth_step = step_authorization_authorized;
+                else
+                {
+                    send_msg(sess->fd, incorrect_cred, sizeof(incorrect_cred));
+                    send_msg(sess->fd, account_have_msg,
+                             sizeof(account_have_msg));
+                }
+            }
         }
         break;
     case step_authorization_authorized:
