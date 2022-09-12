@@ -12,7 +12,7 @@ int get_user_by_name(const char *name, struct user_structure *to,
         return -1;
 
     int i = 0;
-    while (fscanf(f, WRITING_FORMAT, to->nickname, to->password) != EOF)
+    while (fscanf(f, WRITING_FORMAT_USER, to->nickname, to->password) != EOF)
     {
         if (!strcmp((char *)name, to->nickname))
         {
@@ -31,7 +31,7 @@ void append_user(struct user_structure *user, const char *file_name)
     FILE *to = fopen(file_name, "a");
     if (!to)
         return;
-    fprintf(to, WRITING_FORMAT, user->nickname, user->password);
+    fprintf(to, WRITING_FORMAT_USER, user->nickname, user->password);
     fclose(to);
 }
 
@@ -49,8 +49,8 @@ int edit_user_by_name(struct user_structure *user,
         return -1;
     }
 
-    fseek(where, WRITING_FORMAT_LEN * stat, SEEK_SET);
-    fprintf(where, WRITING_FORMAT, user->nickname, user->password);
+    fseek(where, WRITING_FORMAT_LEN_USER * stat, SEEK_SET);
+    fprintf(where, WRITING_FORMAT_USER, user->nickname, user->password);
     fclose(where);
     return stat;
 }
@@ -69,8 +69,8 @@ int delete_user_by_name(struct user_structure *user,
         return -1;
     }
 
-    fseek(where, WRITING_FORMAT_LEN * stat, SEEK_SET);
-    fprintf(where, WRITING_FORMAT, "NULL", "NULL");
+    fseek(where, WRITING_FORMAT_LEN_USER * stat, SEEK_SET);
+    fprintf(where, WRITING_FORMAT_USER, "NULL", "NULL");
     fclose(where);
     return stat;
 }

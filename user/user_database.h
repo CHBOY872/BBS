@@ -1,10 +1,10 @@
-#ifndef FILE_DATABASE_H_SENTRY
-#define FILE_DATABASE_H_SENTRY
+#ifndef USER_DATABASE_H_SENTRY
+#define USER_DATABASE_H_SENTRY
 
 #include "user_structure.h"
 
-#define WRITING_FORMAT "%250s %250s\n"
-#define WRITING_FORMAT_LEN 502
+#define WRITING_FORMAT_USER "%250s %250s\n"
+#define WRITING_FORMAT_LEN_USER 502
 
 void append_user(struct user_structure *user, const char *file_name);
 int edit_user_by_name(struct user_structure *user,

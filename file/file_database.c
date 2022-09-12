@@ -12,7 +12,7 @@ int get_file_by_name(const char *name, struct file_structure *to,
         return -1;
 
     int i = 0;
-    while (fscanf(f, WRITING_FORMAT, to->file_name,
+    while (fscanf(f, WRITING_FORMAT_FILE, to->file_name,
                   to->author_nickname, &to->perms) != EOF)
     {
         if (!strcmp((char *)name, to->file_name))
@@ -32,7 +32,7 @@ void append_file(struct file_structure *file, const char *file_name)
     FILE *to = fopen(file_name, "a");
     if (!to)
         return;
-    fprintf(to, WRITING_FORMAT,
+    fprintf(to, WRITING_FORMAT_FILE,
             file->file_name, file->author_nickname, file->perms);
     fclose(to);
 }
@@ -51,8 +51,8 @@ int edit_file_by_name(struct file_structure *file,
         return -1;
     }
 
-    fseek(where, WRITING_FORMAT_LEN * stat, SEEK_SET);
-    fprintf(where, WRITING_FORMAT, file->file_name,
+    fseek(where, WRITING_FORMAT_LEN_FILE * stat, SEEK_SET);
+    fprintf(where, WRITING_FORMAT_FILE, file->file_name,
             file->author_nickname, file->perms);
     fclose(where);
     return stat;
@@ -72,8 +72,8 @@ int delete_file_by_name(struct file_structure *file,
         return -1;
     }
 
-    fseek(where, WRITING_FORMAT_LEN * stat, SEEK_SET);
-    fprintf(where, WRITING_FORMAT, "NULL", "NULL", 0000);
+    fseek(where, WRITING_FORMAT_LEN_FILE * stat, SEEK_SET);
+    fprintf(where, WRITING_FORMAT_FILE, "NULL", "NULL", 0000);
     fclose(where);
     return stat;
 }
