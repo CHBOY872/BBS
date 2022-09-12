@@ -6,22 +6,33 @@
 #define BUFFERSIZE 256
 #endif
 
-static const char *commands[] = {"login",
-                                 "register",
-                                 "password",
-                                 "put",
-                                 "get",
-                                 "remove",
-                                 "rename"};
+static const char *commands[] = {"login",    /* log in to account */
+                                 "logout",   /* logout from an account */
+                                 "q",        /* quit */
+                                 "register", /* register an acoount */
+                                 "password", /* change password */
+                                 "put",      /* put a file */
+                                 "get",      /* get a file */
+                                 "remove",   /* remove a file */
+                                 "rename"};  /* rename a file */
 
 enum authorization_step
 {
+    step_authorization_register, /* registration process */
+
     step_authorization_uninitialized,
     step_authorization_noauthorized, /* Connected without an account */
 
     step_authorization_unauthorized_login,
     step_authorization_unauthorized_password,
-    step_authorization_authorized
+    step_authorization_authorized /* Connected with an account */
+};
+
+enum registration_step
+{
+    step_registration_no,
+    step_registration_login,
+    step_registration_password
 };
 
 struct session
@@ -31,6 +42,8 @@ struct session
     char buf[BUFFERSIZE];
     int buf_used;
     enum authorization_step auth_step;
+    enum registration_step reg_step;
+    struct user_structure *user;
 };
 
 static int port = 8808;
