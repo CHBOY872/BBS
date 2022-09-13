@@ -3,8 +3,8 @@
 
 #include "file_structure.h"
 
-#define WRITING_FORMAT_FILE "%250s %250s %4o\n"
-#define WRITING_FORMAT_LEN_FILE 506
+#define WRITING_FORMAT_FILE "%250s %250s %8o\n"
+#define WRITING_FORMAT_LEN_FILE 511
 
 void append_file(struct file_structure *file, const char *file_name);
 int edit_file_by_name(struct file_structure *file,

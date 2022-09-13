@@ -11,10 +11,10 @@ permissions for downloading.
 
 PERMISSIONS FOR DOWNLOADING
 
-there are 3 types of permissions for downloading in octal numbers:
-001 = only author may download his file
-010 = only registered users can download file
-100 = only unregistered users can download file
+there are 2 types of permissions for downloading in octal numbers:
+00 = only author may download his file
+10 = only registered users can download file
+01 = only unregistered users can download file
 
 USER COMMANDS
 

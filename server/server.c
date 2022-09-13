@@ -42,6 +42,7 @@ static char reset_pass_fail_msg[] = "Failed reseting password\n";
 
 static char write_name_file_msg[] = "Write a name of file: ";
 static char set_perms_msg[] = "Please set permissions to file: ";
+static char write_complete_perm_msg[] = "Write complete permission: ";
 
 int init_socket()
 {
@@ -317,34 +318,34 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             char *file_name = malloc(sizeof(char) * strlen(msg) + 2 +
                                      strlen(directive_path));
             sprintf(file_name, "%s/%s", directive_path, msg);
-            if (-1 == get_file_by_name(msg, NULL, file_file_path))
+            int fd;
+            if ((fd = open(file_name, O_RDONLY, 0666)) == -1)
             {
-                sess->file_fd = open(file_name, O_CREAT | O_WRONLY, 0666);
-                if (sess->file_fd == -1)
-                    send_msg(sess->fd, type_another_file_name_msg,
-                             sizeof(type_another_file_name_msg));
-                else
-                {
-                    sess->file = malloc(sizeof(struct file_structure));
-                    strcpy(sess->file->author_nickname, sess->name);
-                    strcpy(sess->file->file_name, msg);
-                    sess->file->perms = 0;
-                    append_file(sess->file, file_file_path);
-                    sess->step = step_set_perms;
-                    send_msg(sess->fd, set_perms_msg, sizeof(set_perms_msg));
-                }
+                fd = open(file_name, O_CREAT | O_WRONLY, 0666);
+                sess->file = malloc(sizeof(struct file_structure));
+                strcpy(sess->file->author_nickname, sess->name);
+                strcpy(sess->file->file_name, msg);
+                sess->file->perms = 0;
+                sess->step = step_set_perms;
+                send_msg(sess->fd, set_perms_msg, sizeof(set_perms_msg));
             }
             else
                 send_msg(sess->fd, type_another_file_name_msg,
                          sizeof(type_another_file_name_msg));
-            free(file_name);
         }
         break;
-    case step_is_put:
-        sscanf(msg, "%4o", &(sess->file->perms));
-        edit_file_by_name(sess->file, sess->file->file_name, file_file_path);
 
-        free(sess->file);
+    case step_set_perms:
+        if (sscanf(msg, "%4o", &(sess->file->perms)) == EOF)
+            send_msg(sess->fd, write_complete_perm_msg,
+                     sizeof(write_complete_perm_msg));
+        else
+        {
+            append_file(sess->file, file_file_path);
+
+            free(sess->file);
+            sess->step = step_authorization_authorized;
+        }
         break;
     default:
         break;

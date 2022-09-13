@@ -39,7 +39,10 @@ int init_directory(const char *path, int perms)
 			return -1;
 	}
 	else
+	{
+		chmod(path, 0777);
 		closedir(download_dir);
+	}
 	return 0;
 }
 
@@ -69,7 +72,7 @@ int init_programm(char *file_file_path, char *user_file_path,
 		return -1;
 
 	directory_path[len] = 0;
-	if (init_directory(directory_path, 0666))
+	if (init_directory(directory_path, 0777))
 		return -1;
 
 	return 0;
@@ -93,6 +96,7 @@ int main(int argc, const char **argv)
 	}
 	closedir(dir);
 	main_dir_path = argv[1];
+	chmod(main_dir_path, 0777);
 	if (-1 == init_programm(file_path, user_path, directory_path))
 	{
 		perror("init");
