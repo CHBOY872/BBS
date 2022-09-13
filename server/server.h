@@ -25,7 +25,10 @@ enum authorization_step
 
     step_authorization_unauthorized_login,
     step_authorization_unauthorized_password,
-    step_authorization_authorized /* Connected with an account */
+    step_authorization_authorized, /* Connected with an account */
+
+    step_authorization_change_password
+
 };
 
 enum registration_step
@@ -44,6 +47,8 @@ struct session
     enum authorization_step auth_step;
     enum registration_step reg_step;
     struct user_structure *user;
+    char want_read;
+    char want_write;
 };
 
 static int port = 8808;

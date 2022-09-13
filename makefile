@@ -14,5 +14,5 @@ OBJMODULES=$(SRCMODULES:.c=.o)
 %.o: %.c %.h
 	$(CC) $(CFLAGS) $(DEBUG) $(ANSI) $< -c -o $@
 
-main: main.c $(OBJMODULES)
+_server: _server.c $(OBJMODULES)
 	$(CC) $(CFLAGS) $(DEBUG) $(ANSI) $^ -o $@

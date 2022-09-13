@@ -33,6 +33,8 @@ static char unknown_msg[] = "Unknown...\n";
 
 static char user_is_exist_msg[] = "User with that nickname has already exist\n";
 static char success_registation_msg[] = "Registation successfull\n";
+static char change_pass_msg[] = "Type a new password: ";
+static char reset_pass_fail_msg[] = "Failed reseting password\n";
 
 int init_socket()
 {
@@ -122,6 +124,8 @@ struct session *make_session(int fd)
     sess->name = NULL;
     sess->user = NULL;
     sess->buf_used = 0;
+    sess->want_read = 1;
+    sess->want_write = 0;
     memset(sess->buf, 0, BUFFERSIZE);
     return sess;
 }
@@ -146,6 +150,7 @@ void init_sessions(struct session ***sess, int len)
 int handle(const char *msg, struct session *sess, const char *user_file_path,
            const char *file_file_path, const char *directive_path)
 {
+    struct user_structure user;
     switch (sess->auth_step)
     {
     case step_authorization_register:
@@ -225,7 +230,6 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             send_msg(sess->fd, type_password_msg, sizeof(type_password_msg));
         else
         {
-            struct user_structure user;
             if (-1 == get_user_by_name(sess->name, &user, user_file_path))
             {
                 free(sess->name);
@@ -243,6 +247,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                     send_msg(sess->fd, incorrect_cred, sizeof(incorrect_cred));
                     send_msg(sess->fd, account_have_msg,
                              sizeof(account_have_msg));
+                    sess->auth_step = step_authorization_uninitialized;
                 }
             }
         }
@@ -254,6 +259,12 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             sess->auth_step = step_authorization_noauthorized;
             send_msg(sess->fd, no_authorized_msg, sizeof(no_authorized_msg));
         }
+        else if (!strcmp(msg, commands[4]))
+        {
+            sess->auth_step = step_authorization_change_password;
+            send_msg(sess->fd, change_pass_msg, sizeof(change_pass_msg));
+        }
+
     case step_authorization_noauthorized:
         if (!strcmp(msg, commands[2]))
             return -1;
@@ -268,6 +279,16 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             sess->reg_step = step_registration_login;
             send_msg(sess->fd, login_msg, sizeof(login_msg));
         }
+        break;
+    case step_authorization_change_password:
+        strcpy(user.nickname, sess->name);
+        strcpy(user.password, msg);
+        if (-1 == edit_user_by_name(&user, sess->name, user_file_path))
+        {
+            sess->auth_step = step_authorization_authorized;
+            send_msg(sess->fd, reset_pass_fail_msg, sizeof(reset_pass_fail_msg));
+        }
+        sess->auth_step = step_authorization_authorized;
         break;
     default:
         break;
@@ -330,7 +351,10 @@ int run(int fd_server, const char *user_file_path,
             {
                 if (sess[i])
                 {
-                    FD_SET(i, &rds);
+                    if (sess[i]->want_read)
+                        FD_SET(i, &rds);
+                    if (sess[i]->want_write)
+                        FD_SET(i, &wrs);
                     last_fd = i;
                 }
             }
@@ -357,7 +381,8 @@ int run(int fd_server, const char *user_file_path,
                     if (FD_ISSET(i, &rds))
                     {
                         if (-1 == session_handle(sess[i], user_file_path,
-                                                 file_file_path, directive_path))
+                                                 file_file_path,
+                                                 directive_path))
                         {
                             end_session(&sess[i]);
                             find_max_descriptor(sess, &max_fd);
