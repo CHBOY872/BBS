@@ -7,15 +7,18 @@
 int get_file_by_name(const char *name, struct file_structure *to,
                      const char *file_path)
 {
+    struct file_structure *tmp = to;
+    if (!to)
+        tmp = malloc(sizeof(struct file_structure));
     FILE *f = fopen(file_path, "r");
     if (!f)
         return -1;
 
     int i = 0;
-    while (fscanf(f, WRITING_FORMAT_FILE, to->file_name,
-                  to->author_nickname, &to->perms) != EOF)
+    while (fscanf(f, WRITING_FORMAT_FILE, tmp->file_name,
+                  tmp->author_nickname, &tmp->perms) != EOF)
     {
-        if (!strcmp((char *)name, to->file_name))
+        if (!strcmp((char *)name, tmp->file_name))
         {
             fclose(f);
             return i;
@@ -23,6 +26,8 @@ int get_file_by_name(const char *name, struct file_structure *to,
         i++;
     }
     fclose(f);
+    if (!to)
+        free(tmp);
     return -1;
 }
 

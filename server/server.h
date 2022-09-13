@@ -16,7 +16,7 @@ static const char *commands[] = {"login",    /* log in to account */
                                  "remove",   /* remove a file */
                                  "rename"};  /* rename a file */
 
-enum authorization_step
+enum steps
 {
     step_authorization_register, /* registration process */
 
@@ -27,8 +27,11 @@ enum authorization_step
     step_authorization_unauthorized_password,
     step_authorization_authorized, /* Connected with an account */
 
-    step_authorization_change_password
+    step_authorization_change_password,
 
+    step_want_put,
+    step_set_perms,
+    step_is_put
 };
 
 enum registration_step
@@ -41,12 +44,14 @@ enum registration_step
 struct session
 {
     char *name;
+    int file_fd;
     int fd;
     char buf[BUFFERSIZE];
     int buf_used;
-    enum authorization_step auth_step;
+    enum steps step;
     enum registration_step reg_step;
     struct user_structure *user;
+    struct file_structure *file;
     char want_read;
     char want_write;
 };
