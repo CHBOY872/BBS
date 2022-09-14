@@ -49,6 +49,7 @@ struct session
     char buf[BUFFERSIZE];
     int buf_used;
     enum steps step;
+    enum steps prev_step;
     enum registration_step reg_step;
     struct user_structure *user;
     struct file_structure *file;

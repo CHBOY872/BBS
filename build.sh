@@ -1,4 +1,4 @@
 #!/bin/sh
 
-make _server
-rm file/*.o user/*.o server/*.o
+make all
+rm file/*.o user/*.o server/*.o *.o

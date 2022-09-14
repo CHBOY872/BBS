@@ -16,3 +16,10 @@ OBJMODULES=$(SRCMODULES:.c=.o)
 
 _server: _server.c $(OBJMODULES)
 	$(CC) $(CFLAGS) $(DEBUG) $(ANSI) $^ -o $@
+
+_client: _client.c
+	$(CC) $(CFLAGS) $(DEBUG) $(ANSI) $< -o $@
+
+all:
+	make _server
+	make _client

@@ -137,6 +137,7 @@ struct session *make_session(int fd)
     sess->buf_used = 0;
     sess->want_read = 1;
     sess->want_write = 0;
+    sess->prev_step = step_authorization_uninitialized;
     memset(sess->buf, 0, BUFFERSIZE);
     return sess;
 }
@@ -278,6 +279,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         }
         else if (!strcmp(msg, commands[5])) /* put */
         {
+            sess->prev_step = sess->step;
             sess->step = step_want_put;
             send_msg(sess->fd, write_name_file_msg,
                      sizeof(write_name_file_msg));
@@ -321,7 +323,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             int fd;
             if ((fd = open(file_name, O_RDONLY, 0666)) == -1)
             {
-                fd = open(file_name, O_CREAT | O_WRONLY, 0666);
+                sess->file_fd = open(file_name, O_CREAT | O_WRONLY, 0666);
                 sess->file = malloc(sizeof(struct file_structure));
                 strcpy(sess->file->author_nickname, sess->name);
                 strcpy(sess->file->file_name, msg);
@@ -330,8 +332,12 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 send_msg(sess->fd, set_perms_msg, sizeof(set_perms_msg));
             }
             else
+            {
                 send_msg(sess->fd, type_another_file_name_msg,
                          sizeof(type_another_file_name_msg));
+                close(fd);
+            }
+            free(file_name);
         }
         break;
 
@@ -344,7 +350,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             append_file(sess->file, file_file_path);
 
             free(sess->file);
-            sess->step = step_authorization_authorized;
+            write(sess->fd, "0", 1);
+            sess->step = step_is_put;
         }
         break;
     default:
@@ -359,10 +366,20 @@ int session_handle(struct session *sess, const char *user_file_path,
     int fd = sess->fd;
     int i, buf_used = sess->buf_used, pos = -1;
     int rc = read(fd, sess->buf, BUFFERSIZE - sess->buf_used);
-    if (rc < 0)
+    if (rc < 0 && sess->step != step_is_put)
         return -1;
     if (rc + sess->buf_used > BUFFERSIZE)
         return -1;
+    if (sess->step == step_is_put)
+    {
+        write(sess->file_fd, sess->buf, rc);
+        if (rc != BUFFERSIZE)
+        {
+            close(sess->file_fd);
+            sess->step = sess->prev_step;
+        }
+        return 1;
+    }
     for (i = 0; i < rc; i++)
     {
         if (sess->buf[buf_used + i] == '\n')
@@ -379,8 +396,7 @@ int session_handle(struct session *sess, const char *user_file_path,
 
     char *str = malloc(sizeof(char) * (pos + buf_used));
     memcpy(str, sess->buf, buf_used + pos);
-    if (str[buf_used + pos - 1] == '\r')
-        str[buf_used + pos - 1] = 0;
+    str[buf_used + pos] = 0;
     int stat = handle(str, sess, user_file_path, file_file_path,
                       directive_path);
     free(str);
