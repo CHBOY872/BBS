@@ -145,7 +145,8 @@ struct session *make_session(int fd)
 void end_session(struct session **sess) /* delete session */
 {
     close((*sess)->fd);
-    close((*sess)->file_fd);
+    if ((*sess)->file_fd != -1)
+        close((*sess)->file_fd);
     if ((*sess)->name)
         free((*sess)->name);
     free(*sess);
@@ -376,6 +377,7 @@ int session_handle(struct session *sess, const char *user_file_path,
         if (rc != BUFFERSIZE)
         {
             close(sess->file_fd);
+            sess->file_fd = -1;
             sess->step = sess->prev_step;
         }
         return 1;
@@ -394,8 +396,8 @@ int session_handle(struct session *sess, const char *user_file_path,
         return 1;
     }
 
-    char *str = malloc(sizeof(char) * (pos + buf_used));
-    memcpy(str, sess->buf, buf_used + pos);
+    char *str = malloc(sizeof(char) * (pos + buf_used + 1));
+    memcpy(str, sess->buf, buf_used + pos + 1);
     str[buf_used + pos] = 0;
     int stat = handle(str, sess, user_file_path, file_file_path,
                       directive_path);
@@ -468,3 +470,4 @@ int run(int fd_server, const char *user_file_path,
     close_server(&sess, max_fd);
     return 0;
 }
+
