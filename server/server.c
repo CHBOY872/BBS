@@ -166,6 +166,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
            const char *file_file_path, const char *directive_path)
 {
     struct user_structure user;
+    struct file_structure tmp_file;
     switch (sess->step)
     {
     case step_authorization_register:
@@ -408,6 +409,55 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             sess->step = step_is_put;
         }
         break;
+    case step_want_get:
+        if (-1 != get_file_by_name(msg, &tmp_file, file_file_path))
+        {
+            sess->step = sess->prev_step;
+            char *to_msg = malloc(strlen(responds[5]) +
+                                  strlen(responds[2]) + 1);
+            sprintf(to_msg, "%s%s", responds[2], responds[5]);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
+        }
+        else
+        {
+            char *file_name = malloc(sizeof(char) * strlen(msg) + 2 +
+                                     strlen(directive_path));
+            sprintf(file_name, "%s/%s", directive_path, msg);
+            sess->file_fd = open(file_name, O_RDONLY, 0666);
+            if (sess->prev_step == step_authorization_authorized)
+            {
+                if (!strcmp(tmp_file.author_nickname, sess->name))
+                {
+                    sess->want_write = 1;
+                    sess->step = step_is_get;
+                    send_msg(sess->fd, responds[3], strlen(responds[3]) + 1);
+                }
+                else if ((tmp_file.perms & 010) == 010)
+                {
+                    sess->want_write = 1;
+                    sess->step = step_is_get;
+                    send_msg(sess->fd, responds[3], strlen(responds[3]) + 1);
+                }
+                else
+                {
+                    sess->step = sess->prev_step;
+                    send_msg(sess->fd, responds[5], strlen(responds[5]) + 1);
+                }
+            }
+            else if ((tmp_file.perms & 001) == 001)
+            {
+                sess->want_write = 1;
+                sess->step = step_is_get;
+                send_msg(sess->fd, responds[3], strlen(responds[3]) + 1);
+            }
+            else
+            {
+                sess->step = sess->prev_step;
+                send_msg(sess->fd, responds[5], strlen(responds[5]) + 1);
+            }
+        }
+        break;
     default:
         break;
     }
@@ -458,6 +508,17 @@ int session_handle(struct session *sess, const char *user_file_path,
     bzero(sess->buf, sess->buf_used + rc);
     sess->buf_used = 0;
     return stat;
+}
+
+void write_to_sess(struct session *sess)
+{
+    int rc = read(sess->file_fd, sess->buf, BUFFERSIZE - sess->buf_used);
+    write(sess->fd, sess->buf, rc);
+    if (rc != BUFFERSIZE)
+    {
+        write(sess->fd, "", 0);
+        sess->want_write = 0;
+    }
 }
 
 int run(int fd_server, const char *user_file_path,
@@ -515,6 +576,10 @@ int run(int fd_server, const char *user_file_path,
                             end_session(&sess[i]);
                             find_max_descriptor(sess, &max_fd);
                         }
+                    }
+                    if (FD_ISSET(i, &wrs))
+                    {
+                        write_to_sess(sess[i]);
                     }
                 }
             }

@@ -18,10 +18,10 @@ there are 2 types of permissions for downloading in octal numbers:
 
 USER COMMANDS
 
-register           - register a user
-password           - change a password. only if a user is registered
-put <file_name>    - put a file to a directory. only if a user is registered
-get <file_name>    - download a file. permissions for downloading file 
+register - register a user
+password - change a password. only if a user is registered
+put      - put a file to a directory. only if a user is registered
+get      - download a file. permissions for downloading file 
 depends on file permissions
-remove <file_name> - remove a file from directory. only if user owns this file
-rename <file_name> - rename a file in directory. only if user owns this file
+remove   - remove a file from directory. only if user owns this file
+rename   - rename a file in directory. only if user owns this file

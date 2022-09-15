@@ -82,8 +82,10 @@ void end_session(struct session **sess);
 void accept_client(int server_fd, int *max_fd, struct session ***sess);
 
 void find_max_descriptor(struct session **sess, int *max_fd);
-
+ 
 int session_handle(struct session *sess, const char *user_file_path,
                    const char *file_file_path, const char *directive_path);
+
+void write_to_sess(struct session *sess);
 
 #endif

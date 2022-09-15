@@ -25,7 +25,6 @@ enum put_get_steps
     put_get_step_nothing,
 
     put_get_step_put_start,
-    put_get_step_put_name,
     put_get_step_put_perms,
     put_get_step_put_error,
 
@@ -74,7 +73,7 @@ struct client
     char want_write;
 };
 
-void put_file(int fd_from, int fd_to, char *buffer, int size)
+void take_file(int fd_from, int fd_to, char *buffer, int size)
 {
     memset(buffer, 0, size);
     int rc;
@@ -122,7 +121,8 @@ int main(int argc, const char **argv)
     addr_server.sin_family = AF_INET;
 
     if (-1 ==
-        connect(cl.fd_to, (struct sockaddr *)&addr_server, sizeof(addr_server)))
+        connect(cl.fd_to, (struct sockaddr *)&addr_server,
+                sizeof(addr_server)))
     {
         perror("connect");
         return 3;
@@ -162,13 +162,17 @@ int main(int argc, const char **argv)
             }
             if (strstr(cl.buffer, responds[2])) /* WRITE */
             {
-                put_file(cl.fd_from, cl.fd_to, cl.buffer, BUFFERSIZE);
+                take_file(cl.fd_from, cl.fd_to, cl.buffer, BUFFERSIZE);
+                close(cl.fd_from);
                 cl.st = step_commands;
                 cl.pg_st = put_get_step_nothing;
             }
             if (strstr(cl.buffer, responds[3])) /* READ */
             {
-                /* get_file not done */
+                take_file(cl.fd_to, cl.fd_from, cl.buffer, BUFFERSIZE);
+                close(cl.fd_to);
+                cl.st = step_commands;
+                cl.pg_st = put_get_step_nothing;
             }
             if (strstr(cl.buffer, responds[4])) /* DIALOG */
             {
@@ -202,15 +206,28 @@ int main(int argc, const char **argv)
                 else
                     cl.pg_st = put_get_step_put_perms;
                 break;
-
+            case put_get_step_get_start:
+                cl.fd_to = open(msg, O_WRONLY | O_TRUNC, 0666);
+                if (-1 == cl.fd_to)
+                    write(cl.fd_to, "/", 2);
+                else
+                    cl.pg_st = put_get_step_get_name;
+                break;
             default:
                 break;
             }
 
             if (!strcmp(msg, commands[5]))
             {
-                if (cl.au_st == auth_step_authorized)
+                if (cl.au_st == auth_step_authorized &&
+                    cl.pg_st == put_get_step_nothing)
                     cl.pg_st = put_get_step_put_start;
+            }
+            else if (!strcmp(msg, commands[6]))
+            {
+                if (cl.au_st == auth_step_authorized ||
+                    cl.au_st == auth_step_no_authorized)
+                    cl.pg_st = put_get_step_get_start;
             }
 
             write(cl.fd_to, cl.buffer, rc); /* 1 - the standard
