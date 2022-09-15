@@ -225,8 +225,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         else if (!strcmp("N", msg) || !strcmp("n", msg))
         {
             sess->step = step_authorization_noauthorized;
-            char *to_msg = malloc(sizeof(no_authorized_msg) - 1 +
-                                  sizeof(responds[1]) - 1 +
+            char *to_msg = malloc(sizeof(no_authorized_msg) +
+                                  sizeof(responds[1]) +
                                   sizeof(responds[5]));
             sprintf(to_msg, "%s%s%s", responds[1], responds[5],
                     no_authorized_msg);
