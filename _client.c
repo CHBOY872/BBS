@@ -16,14 +16,18 @@
 
 enum steps
 {
-    step_commands,
+    step_unknown,
+    step_registered,
+    step_no_registered,
 
     step_put_file_start,
     step_put_file_name,
     step_put_file_perms,
     step_put_file_error,
 
-    step_get_file
+    step_get_file_start,
+    step_get_file_name,
+    step_get_file_errors
 };
 
 static const char *commands[] = {"login",    /* log in to account */
@@ -36,9 +40,13 @@ static const char *commands[] = {"login",    /* log in to account */
                                  "remove",   /* remove a file */
                                  "rename"};  /* rename a file */
 
+static const char *responds[] = {"REGISTER",
+                                 "NOREGISTER"};
+
 struct client
 {
     enum steps st;
+    enum steps prev_st;
 
     int fd_from;
     int fd_to;
@@ -66,7 +74,8 @@ void put_file(int fd_from, int fd_to, char *buffer, int size)
 int main(int argc, const char **argv)
 {
     struct client cl;
-    cl.st = step_commands;
+    cl.st = step_unknown;
+    cl.prev_st = step_unknown;
     cl.buf_used = 0;
     memset(cl.buffer, 0, BUFFERSIZE);
     cl.fd_from = 0;
@@ -125,7 +134,12 @@ int main(int argc, const char **argv)
             }
             if (rc == 0)
                 break;
-            write(1, cl.buffer, rc); /* 1 - the standard output stream */
+            if (!strcmp(cl.buffer, responds[0]))
+                cl.st = step_registered;
+            else if (!strcmp(cl.buffer, responds[1]))
+                cl.st = step_no_registered;
+            else
+                write(1, cl.buffer, rc); /* 1 - the standard output stream */
             memset(cl.buffer, 0, rc);
         }
         if (FD_ISSET(0, &rds))
@@ -141,9 +155,13 @@ int main(int argc, const char **argv)
             msg[cl.buf_used + rc - 1] = 0;
             switch (cl.st)
             {
-            case step_commands:
+            case step_registered:
                 if (!strcmp(commands[5], msg))
+                {
+                    cl.prev_st = cl.st;
                     cl.st = step_put_file_start;
+                }
+            case step_no_registered:
                 break;
             case step_put_file_start:
                 cl.fd_from = open(msg, O_RDONLY, 0666);
@@ -173,7 +191,7 @@ int main(int argc, const char **argv)
                                                     output stream */
                 read(cl.fd_to, cl.buffer, rc);
                 put_file(cl.fd_from, cl.fd_to, cl.buffer, BUFFERSIZE);
-                cl.st = step_commands;
+                cl.st = cl.prev_st;
                 break;
             default:
                 write(cl.fd_to, cl.buffer, rc); /* 1 - the standard

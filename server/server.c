@@ -205,6 +205,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                          sizeof(success_registation_msg));
                 free(sess->user);
                 sess->user = NULL;
+                send_msg(sess->fd, responds[0], sizeof(responds[0]));
             }
             break;
         default:
@@ -222,6 +223,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         {
             sess->step = step_authorization_noauthorized;
             send_msg(sess->fd, no_authorized_msg, sizeof(no_authorized_msg));
+            send_msg(sess->fd, responds[1], sizeof(responds[1]));
         }
         else
             send_msg(sess->fd, unknown_msg, sizeof(unknown_msg));
@@ -299,6 +301,13 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             sess->step = step_authorization_register;
             sess->reg_step = step_registration_login;
             send_msg(sess->fd, login_msg, sizeof(login_msg));
+        }
+        else if (!strcmp(msg, commands[6])) /* get */
+        {
+            sess->prev_step = sess->step;
+            sess->step = step_want_get;
+            send_msg(sess->fd, write_name_file_msg,
+                     sizeof(write_name_file_msg));
         }
         break;
     case step_authorization_change_password:
@@ -470,4 +479,3 @@ int run(int fd_server, const char *user_file_path,
     close_server(&sess, max_fd);
     return 0;
 }
-

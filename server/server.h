@@ -16,6 +16,9 @@ static const char *commands[] = {"login",    /* log in to account */
                                  "remove",   /* remove a file */
                                  "rename"};  /* rename a file */
 
+static const char *responds[] = {"REGISTER",
+                                 "NOREGISTER"};
+
 enum steps
 {
     step_authorization_register, /* registration process */
@@ -31,7 +34,10 @@ enum steps
 
     step_want_put,
     step_set_perms,
-    step_is_put
+    step_is_put,
+
+    step_want_get,
+    step_is_get
 };
 
 enum registration_step

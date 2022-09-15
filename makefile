@@ -20,6 +20,13 @@ _server: _server.c $(OBJMODULES)
 _client: _client.c
 	$(CC) $(CFLAGS) $(DEBUG) $(ANSI) $< -o $@
 
+ifneq (clean, $(MAKECMDGOALS))
+-include deps.mk
+endif
+
+deps.mk: $(SRCMODULES)
+	$(CC) -MM $^ > $@
+
 all:
 	make _server
 	make _client

@@ -1,4 +1,9 @@
 #!/bin/sh
 
+DIRECTORIES=$(ls -F | grep /)
+
 make all
-rm file/*.o user/*.o server/*.o *.o
+for DIRECTORY in $DIRECTORIES
+do
+    rm -f $DIRECTORY*.o
+done
