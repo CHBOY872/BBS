@@ -16,8 +16,12 @@ static const char *commands[] = {"login",    /* log in to account */
                                  "remove",   /* remove a file */
                                  "rename"};  /* rename a file */
 
-static const char *responds[] = {"REGISTER",
-                                 "NOREGISTER"};
+static const char *responds[] = {"REGISTER\n",
+                                 "NOREGISTER\n",
+                                 "WRITE\n",
+                                 "READ\n",
+                                 "DIALOG\n",
+                                 "ENDDIALOG\n"};
 
 enum steps
 {

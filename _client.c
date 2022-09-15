@@ -16,9 +16,8 @@
 
 enum steps
 {
-    step_unknown,
-    step_registered,
-    step_no_registered,
+    step_dialog,
+    step_commands,
 
     step_put_file_start,
     step_put_file_name,
@@ -28,6 +27,13 @@ enum steps
     step_get_file_start,
     step_get_file_name,
     step_get_file_errors
+};
+
+enum auth_steps
+{
+    auth_step_unknown,
+    auth_step_authorized,
+    auth_step_no_authorized
 };
 
 static const char *commands[] = {"login",    /* log in to account */
@@ -40,13 +46,18 @@ static const char *commands[] = {"login",    /* log in to account */
                                  "remove",   /* remove a file */
                                  "rename"};  /* rename a file */
 
-static const char *responds[] = {"REGISTER",
-                                 "NOREGISTER"};
+static const char *responds[] = {"REGISTER\n",
+                                 "NOREGISTER\n",
+                                 "WRITE\n",
+                                 "READ\n",
+                                 "DIALOG\n",
+                                 "ENDDIALOG\n"};
 
 struct client
 {
     enum steps st;
-    enum steps prev_st;
+
+    enum auth_steps au_st;
 
     int fd_from;
     int fd_to;
@@ -74,8 +85,8 @@ void put_file(int fd_from, int fd_to, char *buffer, int size)
 int main(int argc, const char **argv)
 {
     struct client cl;
-    cl.st = step_unknown;
-    cl.prev_st = step_unknown;
+    cl.st = step_dialog;
+    cl.au_st = auth_step_unknown;
     cl.buf_used = 0;
     memset(cl.buffer, 0, BUFFERSIZE);
     cl.fd_from = 0;
@@ -134,12 +145,32 @@ int main(int argc, const char **argv)
             }
             if (rc == 0)
                 break;
-            if (!strcmp(cl.buffer, responds[0]))
-                cl.st = step_registered;
-            else if (!strcmp(cl.buffer, responds[1]))
-                cl.st = step_no_registered;
-            else
-                write(1, cl.buffer, rc); /* 1 - the standard output stream */
+
+            if (strstr(cl.buffer, responds[0])) /* REGISTER */
+            {
+                cl.au_st = auth_step_authorized;
+            }
+            if (strstr(cl.buffer, responds[1])) /* NOREGISTER */
+            {
+                cl.au_st = auth_step_no_authorized;
+            }
+            if (strstr(cl.buffer, responds[2])) /* WRITE */
+            {
+                put_file(cl.fd_from, cl.fd_to, cl.buffer, BUFFERSIZE);
+            }
+            if (strstr(cl.buffer, responds[3])) /* READ */
+            {
+                /* get_file */
+            }
+            if (strstr(cl.buffer, responds[4])) /* DIALOG */
+            {
+                cl.st = step_dialog;
+            }
+            if (strstr(cl.buffer, responds[5])) /* ENDDIALOG */
+            {
+                cl.st = step_commands;
+            }
+            write(1, cl.buffer, rc); /* 1 - the standard output stream */
             memset(cl.buffer, 0, rc);
         }
         if (FD_ISSET(0, &rds))
@@ -153,51 +184,10 @@ int main(int argc, const char **argv)
             char *msg = malloc(sizeof(char) * rc + cl.buf_used);
             memmove(msg, cl.buffer, rc + cl.buf_used);
             msg[cl.buf_used + rc - 1] = 0;
-            switch (cl.st)
-            {
-            case step_registered:
-                if (!strcmp(commands[5], msg))
-                {
-                    cl.prev_st = cl.st;
-                    cl.st = step_put_file_start;
-                }
-            case step_no_registered:
-                break;
-            case step_put_file_start:
-                cl.fd_from = open(msg, O_RDONLY, 0666);
-                if (cl.fd_from == -1)
-                {
-                    perror("open");
-                    cl.st = step_put_file_error;
-                }
-                else
-                    cl.st = step_put_file_name;
-                break;
-            case step_put_file_name:
-                cl.st = step_put_file_perms;
-                break;
-            default:
-                break;
-            }
-            if (rc == 0)
-                break;
-            switch (cl.st)
-            {
-            case step_put_file_error:
-                cl.st = step_put_file_start;
-                break;
-            case step_put_file_perms:
-                write(cl.fd_to, cl.buffer, rc); /* 1 - the standard
-                                                    output stream */
-                read(cl.fd_to, cl.buffer, rc);
-                put_file(cl.fd_from, cl.fd_to, cl.buffer, BUFFERSIZE);
-                cl.st = cl.prev_st;
-                break;
-            default:
-                write(cl.fd_to, cl.buffer, rc); /* 1 - the standard
-                                                output stream */
-                break;
-            }
+
+            write(cl.fd_to, cl.buffer, rc); /* 1 - the standard
+                                            output stream */
+
             free(msg);
             memset(cl.buffer, 0, rc);
         }

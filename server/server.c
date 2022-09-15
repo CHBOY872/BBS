@@ -121,6 +121,7 @@ void accept_client(int server_fd, int *max_fd, struct session ***sess)
         *sess = sess_tmp;
     }
     (*sess)[client_fd] = make_session(client_fd);
+    send_msg(client_fd, responds[4], sizeof(responds[4])); /* DIALOG */
     send_msg(client_fd, greetings_msg, sizeof(greetings_msg));
     send_msg(client_fd, account_have_msg, sizeof(account_have_msg));
 }
@@ -201,11 +202,13 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 append_user(sess->user, user_file_path);
                 sess->reg_step = step_registration_no;
                 sess->step = step_authorization_noauthorized;
-                send_msg(sess->fd, success_registation_msg,
-                         sizeof(success_registation_msg));
+                char *to_msg = malloc(sizeof(success_registation_msg) - 1 +
+                                      sizeof(responds[5]));
+                sprintf(to_msg, "%s%s", success_registation_msg, responds[5]);
+                send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+                free(to_msg);
                 free(sess->user);
                 sess->user = NULL;
-                send_msg(sess->fd, responds[0], sizeof(responds[0]));
             }
             break;
         default:
@@ -222,8 +225,13 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         else if (!strcmp("N", msg) || !strcmp("n", msg))
         {
             sess->step = step_authorization_noauthorized;
-            send_msg(sess->fd, no_authorized_msg, sizeof(no_authorized_msg));
-            send_msg(sess->fd, responds[1], sizeof(responds[1]));
+            char *to_msg = malloc(sizeof(no_authorized_msg) - 1 +
+                                  sizeof(responds[1]) - 1 +
+                                  sizeof(responds[5]));
+            sprintf(to_msg, "%s%s%s", responds[1], responds[5],
+                    no_authorized_msg);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
         }
         else
             send_msg(sess->fd, unknown_msg, sizeof(unknown_msg));
@@ -251,18 +259,29 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 free(sess->name);
                 sess->name = NULL;
                 sess->step = step_authorization_uninitialized;
-                send_msg(sess->fd, incorrect_cred, sizeof(incorrect_cred));
-                send_msg(sess->fd, account_have_msg, sizeof(account_have_msg));
+                char *to_msg = malloc(sizeof(incorrect_cred) - 1 +
+                                      sizeof(account_have_msg));
+                sprintf(to_msg, "%s%s", incorrect_cred, account_have_msg);
+                send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+                free(to_msg);
             }
             else
             {
                 if (!strcmp(msg, user.password))
+                {
+                    char *to_msg = malloc(sizeof(responds[5]));
+                    sprintf(to_msg, "%s", responds[5]);
+                    send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+                    free(to_msg);
                     sess->step = step_authorization_authorized;
+                }
                 else
                 {
-                    send_msg(sess->fd, incorrect_cred, sizeof(incorrect_cred));
-                    send_msg(sess->fd, account_have_msg,
-                             sizeof(account_have_msg));
+                    char *to_msg = malloc(sizeof(incorrect_cred) - 1 +
+                                          sizeof(account_have_msg));
+                    sprintf(to_msg, "%s%s", incorrect_cred, account_have_msg);
+                    send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+                    free(to_msg);
                     sess->step = step_authorization_uninitialized;
                 }
             }
@@ -273,19 +292,30 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         {
             free(sess->name);
             sess->step = step_authorization_noauthorized;
-            send_msg(sess->fd, no_authorized_msg, sizeof(no_authorized_msg));
+            char *to_msg = malloc(sizeof(no_authorized_msg) - 1 +
+                                  sizeof(responds[1]));
+            sprintf(to_msg, "%s%s", responds[1], no_authorized_msg);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
         }
         else if (!strcmp(msg, commands[4])) /* password */
         {
             sess->step = step_authorization_change_password;
-            send_msg(sess->fd, change_pass_msg, sizeof(change_pass_msg));
+            char *to_msg = malloc(sizeof(change_pass_msg) - 1 +
+                                  sizeof(responds[4]));
+            sprintf(to_msg, "%s%s", responds[4], change_pass_msg);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
         }
         else if (!strcmp(msg, commands[5])) /* put */
         {
             sess->prev_step = sess->step;
             sess->step = step_want_put;
-            send_msg(sess->fd, write_name_file_msg,
-                     sizeof(write_name_file_msg));
+            char *to_msg = malloc(sizeof(write_name_file_msg) - 1 +
+                                  sizeof(responds[4]));
+            sprintf(to_msg, "%s%s", responds[4], write_name_file_msg);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
         }
 
     case step_authorization_noauthorized:
@@ -294,16 +324,25 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         else if (!strcmp(msg, commands[0])) /* login */
         {
             sess->step = step_authorization_unauthorized_login;
-            send_msg(sess->fd, login_msg, sizeof(login_msg));
+            char *to_msg = malloc(sizeof(responds[4]) - 1 +
+                                  sizeof(login_msg));
+            sprintf(to_msg, "%s%s", responds[4], login_msg);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
         }
         else if (!strcmp(msg, commands[3])) /* register */
         {
             sess->step = step_authorization_register;
             sess->reg_step = step_registration_login;
-            send_msg(sess->fd, login_msg, sizeof(login_msg));
+            char *to_msg = malloc(sizeof(login_msg) - 1 +
+                                  sizeof(responds[4]) - 1 +
+                                  sizeof(responds[1]));
+            sprintf(to_msg, "%s%s%s", responds[4], responds[1], login_msg);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
         }
         else if (!strcmp(msg, commands[6])) /* get */
-        {
+        {                                   /* NOT DONE DON'T TOUCH IT YET */
             sess->prev_step = sess->step;
             sess->step = step_want_get;
             send_msg(sess->fd, write_name_file_msg,
@@ -319,6 +358,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             send_msg(sess->fd, reset_pass_fail_msg,
                      sizeof(reset_pass_fail_msg));
         }
+        send_msg(sess->fd, responds[5], sizeof(responds[5]));
         sess->step = step_authorization_authorized;
         break;
     case step_want_put:
@@ -358,9 +398,12 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         else
         {
             append_file(sess->file, file_file_path);
-
             free(sess->file);
-            write(sess->fd, "0", 1);
+            char *to_msg = malloc(sizeof(responds[5]) - 1 +
+                                  sizeof(responds[2]));
+            sprintf(to_msg, "%s%s", responds[2], responds[5]);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
             sess->step = step_is_put;
         }
         break;
