@@ -168,7 +168,7 @@ int main(int argc, const char **argv)
             }
             if (strstr(cl.buffer, responds[3])) /* READ */
             {
-                /* get_file */
+                /* get_file not done */
             }
             if (strstr(cl.buffer, responds[4])) /* DIALOG */
             {
