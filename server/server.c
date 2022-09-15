@@ -226,8 +226,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         {
             sess->step = step_authorization_noauthorized;
             char *to_msg = malloc(sizeof(no_authorized_msg) +
-                                  sizeof(responds[1]) +
-                                  sizeof(responds[5]) + 3);
+                                  strlen(responds[1]) +
+                                  strlen(responds[5]) + 1);
             sprintf(to_msg, "%s%s%s", responds[1], responds[5],
                     no_authorized_msg);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
