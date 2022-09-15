@@ -157,6 +157,7 @@ int main(int argc, const char **argv)
             if (strstr(cl.buffer, responds[2])) /* WRITE */
             {
                 put_file(cl.fd_from, cl.fd_to, cl.buffer, BUFFERSIZE);
+                cl.st = step_commands;
             }
             if (strstr(cl.buffer, responds[3])) /* READ */
             {
@@ -184,6 +185,26 @@ int main(int argc, const char **argv)
             char *msg = malloc(sizeof(char) * rc + cl.buf_used);
             memmove(msg, cl.buffer, rc + cl.buf_used);
             msg[cl.buf_used + rc - 1] = 0;
+
+            switch (cl.st)
+            {
+            case step_put_file_start:
+                cl.fd_from = open(msg, O_RDONLY, 0666);
+                if (-1 == cl.fd_from)
+                    write(cl.fd_to, "/", 2);
+                else
+                    cl.st = step_put_file_perms;
+                break;
+
+            default:
+                break;
+            }
+
+            if (!strcmp(msg, commands[5]))
+            {
+                if (cl.au_st == auth_step_authorized)
+                    cl.st = step_put_file_start;
+            }
 
             write(cl.fd_to, cl.buffer, rc); /* 1 - the standard
                                             output stream */

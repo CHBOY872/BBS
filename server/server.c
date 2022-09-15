@@ -269,8 +269,9 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             {
                 if (!strcmp(msg, user.password))
                 {
-                    char *to_msg = malloc(strlen(responds[5]) + 1);
-                    sprintf(to_msg, "%s", responds[5]);
+                    char *to_msg = malloc(strlen(responds[5]) +
+                                          strlen(responds[0]) + 1);
+                    sprintf(to_msg, "%s%s", responds[5], responds[0]);
                     send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
                     free(to_msg);
                     sess->step = step_authorization_authorized;
