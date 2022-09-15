@@ -227,7 +227,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             sess->step = step_authorization_noauthorized;
             char *to_msg = malloc(sizeof(no_authorized_msg) +
                                   sizeof(responds[1]) +
-                                  sizeof(responds[5]));
+                                  sizeof(responds[5]) + 3);
             sprintf(to_msg, "%s%s%s", responds[1], responds[5],
                     no_authorized_msg);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
@@ -259,8 +259,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 free(sess->name);
                 sess->name = NULL;
                 sess->step = step_authorization_uninitialized;
-                char *to_msg = malloc(sizeof(incorrect_cred) - 1 +
-                                      sizeof(account_have_msg));
+                char *to_msg = malloc(sizeof(incorrect_cred) +
+                                      sizeof(account_have_msg) + 2);
                 sprintf(to_msg, "%s%s", incorrect_cred, account_have_msg);
                 send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
                 free(to_msg);
@@ -269,7 +269,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             {
                 if (!strcmp(msg, user.password))
                 {
-                    char *to_msg = malloc(sizeof(responds[5]));
+                    char *to_msg = malloc(sizeof(responds[5]) + 1);
                     sprintf(to_msg, "%s", responds[5]);
                     send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
                     free(to_msg);
@@ -277,8 +277,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 }
                 else
                 {
-                    char *to_msg = malloc(sizeof(incorrect_cred) - 1 +
-                                          sizeof(account_have_msg));
+                    char *to_msg = malloc(sizeof(incorrect_cred) +
+                                          sizeof(account_have_msg) + 2);
                     sprintf(to_msg, "%s%s", incorrect_cred, account_have_msg);
                     send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
                     free(to_msg);
@@ -292,8 +292,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         {
             free(sess->name);
             sess->step = step_authorization_noauthorized;
-            char *to_msg = malloc(sizeof(no_authorized_msg) - 1 +
-                                  sizeof(responds[1]));
+            char *to_msg = malloc(sizeof(no_authorized_msg) +
+                                  sizeof(responds[1]) + 2);
             sprintf(to_msg, "%s%s", responds[1], no_authorized_msg);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
@@ -301,8 +301,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         else if (!strcmp(msg, commands[4])) /* password */
         {
             sess->step = step_authorization_change_password;
-            char *to_msg = malloc(sizeof(change_pass_msg) - 1 +
-                                  sizeof(responds[4]));
+            char *to_msg = malloc(sizeof(change_pass_msg) +
+                                  sizeof(responds[4]) + 2);
             sprintf(to_msg, "%s%s", responds[4], change_pass_msg);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
@@ -311,8 +311,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         {
             sess->prev_step = sess->step;
             sess->step = step_want_put;
-            char *to_msg = malloc(sizeof(write_name_file_msg) - 1 +
-                                  sizeof(responds[4]));
+            char *to_msg = malloc(sizeof(write_name_file_msg) +
+                                  sizeof(responds[4]) + 2);
             sprintf(to_msg, "%s%s", responds[4], write_name_file_msg);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
@@ -324,8 +324,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         else if (!strcmp(msg, commands[0])) /* login */
         {
             sess->step = step_authorization_unauthorized_login;
-            char *to_msg = malloc(sizeof(responds[4]) - 1 +
-                                  sizeof(login_msg));
+            char *to_msg = malloc(sizeof(responds[4]) +
+                                  sizeof(login_msg) + 2);
             sprintf(to_msg, "%s%s", responds[4], login_msg);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
@@ -334,9 +334,9 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         {
             sess->step = step_authorization_register;
             sess->reg_step = step_registration_login;
-            char *to_msg = malloc(sizeof(login_msg) - 1 +
-                                  sizeof(responds[4]) - 1 +
-                                  sizeof(responds[1]));
+            char *to_msg = malloc(sizeof(login_msg) +
+                                  sizeof(responds[4]) +
+                                  sizeof(responds[1]) + 3);
             sprintf(to_msg, "%s%s%s", responds[4], responds[1], login_msg);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
@@ -399,8 +399,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         {
             append_file(sess->file, file_file_path);
             free(sess->file);
-            char *to_msg = malloc(sizeof(responds[5]) - 1 +
-                                  sizeof(responds[2]));
+            char *to_msg = malloc(sizeof(responds[5]) +
+                                  sizeof(responds[2]) + 2);
             sprintf(to_msg, "%s%s", responds[2], responds[5]);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
