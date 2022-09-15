@@ -202,8 +202,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 append_user(sess->user, user_file_path);
                 sess->reg_step = step_registration_no;
                 sess->step = step_authorization_noauthorized;
-                char *to_msg = malloc(sizeof(success_registation_msg) - 1 +
-                                      sizeof(responds[5]));
+                char *to_msg = malloc(sizeof(success_registation_msg) +
+                                      strlen(responds[5]) + 1);
                 sprintf(to_msg, "%s%s", success_registation_msg, responds[5]);
                 send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
                 free(to_msg);
