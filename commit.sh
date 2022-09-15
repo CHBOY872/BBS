@@ -20,4 +20,4 @@ fi
 if [ "$?" -eq "0" ]
 then
     git push
-if
+fi
