@@ -10,9 +10,14 @@ do
     git add $FILE
 done
 
-if [[ -z $1 ]]
+if [ -z "$1" ]
 then
     git commit
 else 
     git commit -m "$1"
 fi
+
+if [ "$?" -eq "0" ]
+then
+    git push
+if
