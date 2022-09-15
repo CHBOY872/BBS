@@ -17,16 +17,21 @@
 enum steps
 {
     step_dialog,
-    step_commands,
+    step_commands
+};
 
-    step_put_file_start,
-    step_put_file_name,
-    step_put_file_perms,
-    step_put_file_error,
+enum put_get_steps
+{
+    put_get_step_nothing,
 
-    step_get_file_start,
-    step_get_file_name,
-    step_get_file_errors
+    put_get_step_put_start,
+    put_get_step_put_name,
+    put_get_step_put_perms,
+    put_get_step_put_error,
+
+    put_get_step_get_start,
+    put_get_step_get_name,
+    put_get_step_get_errors
 };
 
 enum auth_steps
@@ -56,7 +61,7 @@ static const char *responds[] = {"REGISTER\n",
 struct client
 {
     enum steps st;
-
+    enum put_get_steps pg_st;
     enum auth_steps au_st;
 
     int fd_from;
@@ -93,6 +98,7 @@ int main(int argc, const char **argv)
     cl.fd_to = 0;
     cl.want_read = 1;
     cl.want_write = 0;
+    cl.pg_st = put_get_step_nothing;
 
     if (argc != 3)
     {
@@ -158,6 +164,7 @@ int main(int argc, const char **argv)
             {
                 put_file(cl.fd_from, cl.fd_to, cl.buffer, BUFFERSIZE);
                 cl.st = step_commands;
+                cl.pg_st = put_get_step_nothing;
             }
             if (strstr(cl.buffer, responds[3])) /* READ */
             {
@@ -186,14 +193,14 @@ int main(int argc, const char **argv)
             memmove(msg, cl.buffer, rc + cl.buf_used);
             msg[cl.buf_used + rc - 1] = 0;
 
-            switch (cl.st)
+            switch (cl.pg_st)
             {
-            case step_put_file_start:
+            case put_get_step_put_start:
                 cl.fd_from = open(msg, O_RDONLY, 0666);
                 if (-1 == cl.fd_from)
                     write(cl.fd_to, "/", 2);
                 else
-                    cl.st = step_put_file_perms;
+                    cl.pg_st = put_get_step_put_perms;
                 break;
 
             default:
@@ -203,7 +210,7 @@ int main(int argc, const char **argv)
             if (!strcmp(msg, commands[5]))
             {
                 if (cl.au_st == auth_step_authorized)
-                    cl.st = step_put_file_start;
+                    cl.pg_st = put_get_step_put_start;
             }
 
             write(cl.fd_to, cl.buffer, rc); /* 1 - the standard
