@@ -311,6 +311,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         if (!strcmp(msg, commands[1])) /* logout */
         {
             free(sess->name);
+            sess->name = NULL;
             sess->step = step_authorization_noauthorized;
             char *to_msg = malloc(sizeof(no_authorized_msg) +
                                   strlen(responds[1]) + 1);
