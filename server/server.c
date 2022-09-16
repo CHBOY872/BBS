@@ -453,6 +453,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                                      strlen(directive_path));
             sprintf(file_name, "%s/%s", directive_path, msg);
             sess->file_fd = open(file_name, O_RDONLY, 0666);
+            free(file_name);
             if (sess->prev_step == step_authorization_authorized)
             {
                 if (!strcmp(tmp_file.author_nickname, sess->name) ||
