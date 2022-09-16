@@ -6,22 +6,6 @@
 #define BUFFERSIZE 256
 #endif
 
-static const char *commands[] = {"login",    /* log in to account */
-                                 "logout",   /* logout from an account */
-                                 "q",        /* quit */
-                                 "register", /* register an acoount */
-                                 "password", /* change password */
-                                 "put",      /* put a file */
-                                 "get",      /* get a file */
-                                 "remove"};  /* remove a file */
-
-static const char *responds[] = {"REGISTER\n",
-                                 "NOREGISTER\n",
-                                 "WRITE\n",
-                                 "READ\n",
-                                 "DIALOG\n",
-                                 "ENDDIALOG\n"};
-
 enum steps
 {
     step_authorization_register, /* registration process */
@@ -67,8 +51,6 @@ struct session
     char want_read;
     char want_write;
 };
-
-static int port = 8808;
 
 int init_socket();
 

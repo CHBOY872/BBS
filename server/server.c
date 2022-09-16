@@ -18,6 +18,24 @@
 
 #include "server.h"
 
+static int port = 8808;
+
+static const char *commands[] = {"login",    /* log in to account */
+                                 "logout",   /* logout from an account */
+                                 "q",        /* quit */
+                                 "register", /* register an acoount */
+                                 "password", /* change password */
+                                 "put",      /* put a file */
+                                 "get",      /* get a file */
+                                 "remove"};  /* remove a file */
+
+static const char *responds[] = {"REGISTER\n",
+                                 "NOREGISTER\n",
+                                 "WRITE\n",
+                                 "READ\n",
+                                 "DIALOG\n",
+                                 "ENDDIALOG\n"};
+
 static char greetings_msg[] = "Welcome!\n";
 static char account_have_msg[] = "Do you have an account? ([Y/y] - yes,"
                                  " [N/n] - no) : ";
@@ -185,8 +203,8 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                              sizeof(user_is_exist_msg));
                 else
                 {
-                    bzero(sess->user->nickname, USER_NAME);
-                    bzero(sess->user->password, USER_PASSWORD);
+                    memset(sess->user->nickname, 0, USER_NAME);
+                    memset(sess->user->password, 0, USER_PASSWORD);
                     strcpy(sess->user->nickname, msg);
                     sess->reg_step = step_registration_password;
                     send_msg(sess->fd, password_msg, sizeof(password_msg));
