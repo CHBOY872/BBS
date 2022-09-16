@@ -560,7 +560,7 @@ int session_handle(struct session *sess, const char *user_file_path,
     int stat = handle(str, sess, user_file_path, file_file_path,
                       directive_path);
     free(str);
-    bzero(sess->buf, sess->buf_used + rc);
+    memset(sess->buf, 0, sess->buf_used + rc);
     sess->buf_used = 0;
     return stat;
 }
