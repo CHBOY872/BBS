@@ -40,6 +40,9 @@ enum steps
     step_set_perms,
     step_is_put,
 
+    step_want_rename,
+    step_want_remove,
+
     step_want_get,
     step_is_get
 };

@@ -319,6 +319,26 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
         }
+        else if (!strcmp(msg, commands[7])) /* remove */
+        {
+            sess->prev_step = sess->step;
+            sess->step = step_want_remove;
+            char *to_msg = malloc(sizeof(write_name_file_msg) +
+                                  strlen(responds[4]) + 1);
+            sprintf(to_msg, "%s%s", responds[4], write_name_file_msg);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
+        }
+        else if (!strcmp(msg, commands[8])) /* rename */
+        {
+            sess->prev_step = sess->step;
+            sess->step = step_want_rename;
+            char *to_msg = malloc(sizeof(write_name_file_msg) +
+                                  strlen(responds[4]) + 1);
+            sprintf(to_msg, "%s%s", responds[4], write_name_file_msg);
+            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
+            free(to_msg);
+        }
 
     case step_authorization_noauthorized:
         if (!strcmp(msg, commands[2])) /* q */
@@ -452,6 +472,38 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         break;
     case step_is_get:
         sess->want_write = 1;
+        break;
+    case step_want_remove:
+        if (-1 != get_file_by_name(msg, &tmp_file, file_file_path))
+        {
+            if (!strcmp(sess->name, tmp_file.author_nickname))
+            {
+                char *file_name = malloc(sizeof(char) * strlen(msg) + 2 +
+                                         strlen(directive_path));
+                sprintf(file_name, "%s/%s", directive_path, msg);
+                int stat = remove(file_name);
+                if (-1 == stat)
+                {
+                    sess->step = sess->prev_step;
+                    send_msg(sess->fd, responds[5], strlen(responds[5]) + 1);
+                }
+                else
+                    delete_file_by_name(&tmp_file, msg, file_file_path);
+                free(file_name);
+                sess->step = sess->prev_step;
+                send_msg(sess->fd, responds[5], strlen(responds[5]) + 1);
+            }
+            else
+            {
+                sess->step = sess->prev_step;
+                send_msg(sess->fd, responds[5], strlen(responds[5]) + 1);
+            }
+        }
+        else
+        {
+            sess->step = sess->prev_step;
+            send_msg(sess->fd, responds[5], strlen(responds[5]) + 1);
+        }
         break;
     default:
         break;
