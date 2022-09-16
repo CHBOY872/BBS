@@ -81,7 +81,7 @@ void take_file(int fd_from, int fd_to, char *buffer, int size)
     {
         rc = read(fd_from, buffer, size);
         write(fd_to, buffer, rc);
-        memset(buffer, 0, rc);
+        memset(buffer, 0, size);
     } while (rc == size);
 }
 
