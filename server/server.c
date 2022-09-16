@@ -410,12 +410,11 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
         }
         break;
     case step_want_get:
-        if (-1 != get_file_by_name(msg, &tmp_file, file_file_path))
+        if (-1 == get_file_by_name(msg, &tmp_file, file_file_path))
         {
             sess->step = sess->prev_step;
-            char *to_msg = malloc(strlen(responds[5]) +
-                                  strlen(responds[2]) + 1);
-            sprintf(to_msg, "%s%s", responds[2], responds[5]);
+            char *to_msg = malloc(strlen(responds[5]) + 1);
+            sprintf(to_msg, "%s", responds[5]);
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
         }
@@ -427,15 +426,9 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             sess->file_fd = open(file_name, O_RDONLY, 0666);
             if (sess->prev_step == step_authorization_authorized)
             {
-                if (!strcmp(tmp_file.author_nickname, sess->name))
+                if (!strcmp(tmp_file.author_nickname, sess->name) ||
+                    (tmp_file.perms & 010) == 010)
                 {
-                    sess->want_write = 1;
-                    sess->step = step_is_get;
-                    send_msg(sess->fd, responds[3], strlen(responds[3]) + 1);
-                }
-                else if ((tmp_file.perms & 010) == 010)
-                {
-                    sess->want_write = 1;
                     sess->step = step_is_get;
                     send_msg(sess->fd, responds[3], strlen(responds[3]) + 1);
                 }
@@ -447,7 +440,6 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             }
             else if ((tmp_file.perms & 001) == 001)
             {
-                sess->want_write = 1;
                 sess->step = step_is_get;
                 send_msg(sess->fd, responds[3], strlen(responds[3]) + 1);
             }
@@ -457,6 +449,9 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
                 send_msg(sess->fd, responds[5], strlen(responds[5]) + 1);
             }
         }
+        break;
+    case step_is_get:
+        sess->want_write = 1;
         break;
     default:
         break;
@@ -516,8 +511,10 @@ void write_to_sess(struct session *sess)
     write(sess->fd, sess->buf, rc);
     if (rc != BUFFERSIZE)
     {
+        close(sess->file_fd);
         write(sess->fd, "", 0);
         sess->want_write = 0;
+        sess->step = sess->prev_step;
     }
 }
 

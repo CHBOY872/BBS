@@ -82,8 +82,7 @@ void take_file(int fd_from, int fd_to, char *buffer, int size)
         rc = read(fd_from, buffer, size);
         write(fd_to, buffer, rc);
         memset(buffer, 0, rc);
-    } while (rc);
-    close(fd_from);
+    } while (rc == size);
 }
 
 int main(int argc, const char **argv)
@@ -169,8 +168,9 @@ int main(int argc, const char **argv)
             }
             if (strstr(cl.buffer, responds[3])) /* READ */
             {
+                write(cl.fd_to, "1\n", 3);
                 take_file(cl.fd_to, cl.fd_from, cl.buffer, BUFFERSIZE);
-                close(cl.fd_to);
+                close(cl.fd_from);
                 cl.st = step_commands;
                 cl.pg_st = put_get_step_nothing;
             }
@@ -207,8 +207,8 @@ int main(int argc, const char **argv)
                     cl.pg_st = put_get_step_put_perms;
                 break;
             case put_get_step_get_start:
-                cl.fd_to = open(msg, O_WRONLY | O_TRUNC, 0666);
-                if (-1 == cl.fd_to)
+                cl.fd_from = open(msg, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                if (-1 == cl.fd_from)
                     write(cl.fd_to, "/", 2);
                 else
                     cl.pg_st = put_get_step_get_name;
