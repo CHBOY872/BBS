@@ -13,8 +13,7 @@ static const char *commands[] = {"login",    /* log in to account */
                                  "password", /* change password */
                                  "put",      /* put a file */
                                  "get",      /* get a file */
-                                 "remove",   /* remove a file */
-                                 "rename"};  /* rename a file */
+                                 "remove"};  /* remove a file */
 
 static const char *responds[] = {"REGISTER\n",
                                  "NOREGISTER\n",
@@ -40,7 +39,6 @@ enum steps
     step_set_perms,
     step_is_put,
 
-    step_want_rename,
     step_want_remove,
 
     step_want_get,

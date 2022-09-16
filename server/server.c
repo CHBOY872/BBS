@@ -329,16 +329,6 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
             free(to_msg);
         }
-        else if (!strcmp(msg, commands[8])) /* rename */
-        {
-            sess->prev_step = sess->step;
-            sess->step = step_want_rename;
-            char *to_msg = malloc(sizeof(write_name_file_msg) +
-                                  strlen(responds[4]) + 1);
-            sprintf(to_msg, "%s%s", responds[4], write_name_file_msg);
-            send_msg(sess->fd, to_msg, strlen(to_msg) + 1);
-            free(to_msg);
-        }
 
     case step_authorization_noauthorized:
         if (!strcmp(msg, commands[2])) /* q */
@@ -364,7 +354,7 @@ int handle(const char *msg, struct session *sess, const char *user_file_path,
             free(to_msg);
         }
         else if (!strcmp(msg, commands[6])) /* get */
-        {                                   /* NOT DONE DON'T TOUCH IT YET */
+        {
             sess->prev_step = sess->step;
             sess->step = step_want_get;
             send_msg(sess->fd, write_name_file_msg,
