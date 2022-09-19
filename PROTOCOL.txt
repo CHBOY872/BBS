@@ -1,6 +1,6 @@
 PROTOCOL
 
-WHAT DOES DIRECTORY COMTAIN
+WHAT DOES DIRECTORY CONTAIN
 
 main directory should have 2 files. There are "list_of_users.txt" and 
 "list_of_files.txt"
