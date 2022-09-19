@@ -27,3 +27,12 @@ put        - put a file to server. Only authorized users can put a file
 get        - get a file from a server. All users can get files.
              It depends on permissions which were set to a file.
 remove     - remove a file from server. Only owners can remove a file.
+
+SERVER'S RESPONDS
+
+REGISTER   - sends if you are authorized
+NOREGISTER - sends if you are not authorized
+WRITE      - sends if server prepares for putting a file
+READ       - sends if server prepares for getting a file to user
+DIALOG     - sends if server listens all your requests
+ENDDIALOG  - sends if server does not listen all requests, only commands
